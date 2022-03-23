@@ -1,0 +1,20 @@
+#Ansible parse the output of block as varibale for further blocks
+
+- hosts: all
+
+  tasks:
+
+     - name: Run a shell command and register its output as a variable
+       ansible.builtin.shell: /usr/bin/lscpu
+       register: foo_result
+       ignore_errors: true
+     - name: Run a shell command using output of the previous task
+#         msg: "{{ item.split(':')[1].strip() }}"
+       set_fact:
+         version: "{{ item.split(':')[1].strip() }}"
+       loop: "{{foo_result.stdout_lines}}"
+       when: item.split(':')[0] == 'Architecture'
+
+     - name: test output
+       debug:
+         msg: "{{ version }}"
