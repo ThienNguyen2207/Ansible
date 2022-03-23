@@ -1,0 +1,63 @@
+---
+- name: playbook for simple 1 GB partition
+  hosts: 192.168.203.132
+  become: true
+  tasks:
+    - name: create partition
+      parted:
+        device: /dev/sdb
+        number: 3
+        flags: [ lvm ]
+        state: present
+        part_start: 5GiB
+        part_end: 8GiB
+
+    - name: Install lvm2 dependency
+      package:
+        name: lvm2
+        state: present
+
+    - name: task for creating volume group
+      lvg:
+          vg: vgThien
+          pvs: /dev/sdb3,/dev/sdb4
+          pesize: 16
+
+    - name: task for creating logical volume
+      lvol:
+          vg: vgThien
+          lv:  sample-lv2
+          size: +100%FREE
+          force: yes
+
+    - name: Create directory data1 if does not exist
+      file:
+        path: /thien_mount1
+        state: directory
+        mode: '0755'
+
+    - name: format the xfs filesystem
+      filesystem:
+        fstype: xfs
+        dev: /dev/vgThien/sample-lv2
+
+#    - name: unmount FS
+#      mount:
+#        path: /dev/mapper/vgThien-sample--lv2
+#        state: unmounted
+
+    - name: mount the lv on /data1
+      mount:
+        path: /thien_mount
+        src: /dev/vgThien/sample-lv2
+        fstype: xfs
+        boot: yes
+        state: remounted
+
+    - name: test shell disk
+      shell: xfs_growfs /dev/vgThien/sample-lv2
+
+ ***************************************************************************************************************
+ Note:
+- With Disk format as XFS, we need to use "xsf_grows" to force system to apply the changes for fstab. 
+- With the rest Disk format , we need to use "resize2fs" to force system to apply the changes for fstab. 
