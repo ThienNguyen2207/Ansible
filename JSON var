@@ -1,9 +1,10 @@
 I. Reference Document
 https://www.middlewareinventory.com/blog/ansible-playbook-read-json-file/
+https://www.middlewareinventory.com/blog/ansible-playbook-read-json-file/#Complex_JSON_JMES_Queries_and_Ansible_Playbook
 
 II. Why is JSON?
 It is a format data of ...notation.
 
 III. How to parse a JSON file
 1. use Json_query
-2. 
+2. from_json
