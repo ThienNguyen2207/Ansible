@@ -1,1 +1,9 @@
-xxc
+I. Reference Document
+https://www.middlewareinventory.com/blog/ansible-playbook-read-json-file/
+
+II. Why is JSON?
+It is a format data of ...notation.
+
+III. How to parse a JSON file
+1. use Json_query
+2. 
