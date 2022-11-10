@@ -3,13 +3,59 @@
   tasks:
 
     - name: Update
-      apt: update_cache=yes
+      apt: 
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    
+    
+    - name: Set up Redis 6 repo
+      shell: |
+        curl https://packages.redis.io/gpg | sudo apt-key add -
+        echo "deb https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
    
-    - name: Installing Redis
-      apt: name=redis-server state=latest
-
+    - name: Install redis
+      apt:
+        name: redis
+        update_cache: yes
       notify:
-        - restart redis.service 
+        - Enable Redis
 
-    - name: Restart Redis Server
-      service: name=redis state=restarted enabled=yes
+    - name: Set redis server pid file
+      lineinfile:
+        path: /etc/redis/redis.conf
+        regexp: "^pidfile"
+        line: "pidfile /var/run/redis/redis-server.pid"
+      notify:
+        - Restart Redis
+
+    - name: Secure redis with a password
+      lineinfile:
+        dest: /etc/redis/redis.conf
+        regexp: '^(# )?requirepass \w*$'
+        line: 'requirepass {{ redis_password }}'
+        state: present
+      notify:
+        - Restart Redis
+
+  handlers:
+    - name: Restart Redis
+      systemd:
+        name: redis-server
+        state: restarted
+
+    - name: Start Redis
+      systemd:
+        name: redis-server
+        state: started
+
+    - name: Stop Redis
+      systemd:
+        name: redis-server
+        state: stopped
+
+    - name: Enable Redis
+      systemd:
+        name: redis-server
+        enabled: yes 
